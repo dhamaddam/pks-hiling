@@ -27,9 +27,16 @@ jobs:
     - name: Run tests
       run: |
         pytest
+    
+    - name: Deploy via SSH
+      uses: appleboy/ssh-action@v1.0.0
+      with:
+        host: ${{ secrets.VPS_HOST }}
+        username: ${{ secrets.VPS_USER }}
+        key: ${{ secrets.VPS_SSH_KEY }}
+        script: |
+          cd /usr/bin/bots/pks-hiling
+          git pull origin main
+          systemctl daemon-reload
+          systemctl restart pks-hiling
 
-    - name: Deploy to production (optional)
-      if: github.ref == 'refs/heads/main'
-      run: |
-        source environtments/rest_serve/bin/activate
-        sh install.sh
