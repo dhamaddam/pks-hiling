@@ -31,8 +31,5 @@ jobs:
         username: ${{ secrets.VPS_USER }}
         key: ${{ secrets.VPS_SSH_KEY }}
         script: |
-          cd /usr/bin/bots/pks-hiling
-          git pull origin main
-          systemctl daemon-reload
-          systemctl restart pks-hiling
+          echo "Hello from SSH"
 
