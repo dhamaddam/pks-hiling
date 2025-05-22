@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h2>Selamat Datang, {{ username }}!</h2>
+<p>Ini adalah halaman dashboard utama.</p>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h5 class="card-title">Pengguna</h5>
+                <p class="card-text">Jumlah pengguna: 150</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title">Laporan</h5>
+                <p class="card-text">Laporan terbaru tersedia</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

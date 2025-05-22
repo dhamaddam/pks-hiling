@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Peta GIS dengan Upload</title>
+    
+    <!-- Folium akan otomatis menambahkan leaflet.js -->
+    {{ folium_map|safe }}
+    <div id="overlay">
+        <div id="overlay-text">Access Denied: You are not authorized to view this map</div>
+    </div>
+    <!-- Tambahkan Bootstrap CSS untuk Modal -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <style>
+        /* Map Container */
+        #map {
+            width: 100%;
+            height: 600px;
+            position: relative;
+        }
+
+        /* Grey Overlay */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent grey */
+            z-index: 1000; /* Ensure it stays above the map */
+            display: none; /* Hide by default */
+        }
+
+        /* Message on the overlay */
+        #overlay-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-size: 24px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <script>
+        var isAuthenticated = {{ is_authenticated|tojson }};  // Pass from Flask
+
+        // Show the overlay if the user is NOT authenticated
+        if (!isAuthenticated) {
+            document.getElementById("overlay").style.display = "block";
+        }
+    </script>
+    <div class="container mt-3">
+        <h2>Peta GIS - Upload GeoJSON</h2>
+
+        <!-- Tampilkan pesan Flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Tombol untuk membuka modal -->
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            Upload GeoJSON
+        </button>
+    </div>
+
+    <!-- Modal Upload -->
+    <div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="uploadModalLabel">Upload File GeoJSON</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="uploadForm" action="/upload" method="POST" enctype="multipart/form-data">
+                        <input type="file" name="geojson_file" class="form-control" accept=".json, .geojson" required>
+                        <button type="submit" class="btn btn-success mt-3">Upload</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS untuk Modal -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

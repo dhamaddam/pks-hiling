@@ -1,0 +1,14 @@
+flask_sslify
+flask_restful
+flask_cors
+flask
+numpy
+pandas
+scipy
+matplotlib
+bokeh
+plotly
+python-magic
+python-dotenv
+flask_socketio
+openpyxl

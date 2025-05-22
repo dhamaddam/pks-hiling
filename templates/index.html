@@ -1,0 +1,13 @@
+{% extends "layout.html" %}
+{% block title %} Test {% endblock %}
+{% block head %} Test {% endblock %}
+
+{% block body %} 
+
+<div>
+        <a href="{{ index_url }}"> HomePage</a>
+        <h1> Koordinat Tengah : {{ koordinat[0] }} LS, {{ koordinat[1] }} BT </h1>
+        <h1>{{kota}}</h1>
+</div>
+        {% include "map.html" %}
+{% endblock %}
