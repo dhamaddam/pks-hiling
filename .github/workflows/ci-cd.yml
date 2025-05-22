@@ -28,13 +28,15 @@ jobs:
       env:
         SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
       run: |
-        echo "Starting SSH Agent..."
+        echo "▶️ Starting SSH agent..."
         eval "$(ssh-agent -s)"
-        
+      
+        echo "🔑 Adding private key to agent..."
         echo "${SSH_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
-        
-        echo "Connecting to server and deploying..."
+      
+        echo "🚀 Connecting to server and deploying code..."
         ssh -o StrictHostKeyChecking=no root@45.32.115.11 << 'EOF'
-          cd /usr/bin/bots/pks-hiling
+        cd /usr/bin/bots/pks-hiling
           git pull origin main
         EOF
+      
