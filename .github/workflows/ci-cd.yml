@@ -23,15 +23,18 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-    
-    - name: Deploy to server Ubuntu
-      run: |
-        eval "$(ssh-agent -s)"  # Start the SSH agent
-        echo "${SSH_PRIVATE_KEY}" | tr -d '\r' | ssh-add - # Add the private key
-        ssh -o StrictHostKeyChecking=no root@45.32.115.11 "
-        cd /usr/bin/bots/pks-hiling && 
-        git pull origin main "
+
+    - name: Deploy to Ubuntu VPS
       env:
         SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
-  
-
+      run: |
+        echo "Starting SSH Agent..."
+        eval "$(ssh-agent -s)"
+        
+        echo "${SSH_PRIVATE_KEY}" | tr -d '\r' | ssh-add -
+        
+        echo "Connecting to server and deploying..."
+        ssh -o StrictHostKeyChecking=no root@45.32.115.11 << 'EOF'
+          cd /usr/bin/bots/pks-hiling
+          git pull origin main
+        EOF
