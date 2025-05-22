@@ -29,8 +29,7 @@ jobs:
         eval "$(ssh-agent -s)"  # Start the SSH agent
         echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null  # Add the private key
         ssh -o StrictHostKeyChecking=no root@45.32.115.11 "
-        cd /usr/bin/bots/pks-hiling && 
-        git pull origin main "
+        cd /usr/bin/bots/pks-hiling  "
       env:
         SSH_PRIVATE_KEY: ${{ secrets.VPS_SSH_KEY }}
   
