@@ -1,0 +1,140 @@
+{% extends 'base.html' %}
+{% block title %}📋 Sensus Tanaman{% endblock %}
+
+{% block content %}
+<h2 class="mt-3 mb-3">📋 Data Sensus Tanaman</h2>
+
+<!-- Toolbar -->
+<div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+  <!-- Upload CSV -->
+  <form action="{{ url_for('dashboard.upload_csv_sensus') }}" method="POST" enctype="multipart/form-data"
+        class="d-flex align-items-center gap-2">
+    <label for="file" class="form-label mb-0"><strong>Upload CSV:</strong></label>
+    <input type="file" name="file" id="file" accept=".csv"
+           class="form-control form-control-sm" required>
+    <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+  </form>
+
+  <!-- Filters -->
+  <form method="get" action="{{ url_for('sensus_tanaman') }}" class="d-flex align-items-center gap-2 mb-0">
+    <label for="tahun_record" class="form-label mb-0">Tahun:</label>
+    <select name="tahun_record" id="tahun_record" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for t in tahun_list %}
+        <option value="{{ t }}" {% if t|string == selected_tahun %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="no_percobaan" class="form-label mb-0">No Percobaan:</label>
+    <select name="no_percobaan" id="no_percobaan" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for n in no_percobaan_list %}
+        <option value="{{ n }}" {% if n|string == selected_no_percobaan %}selected{% endif %}>{{ n }}</option>
+      {% endfor %}
+    </select>
+
+    <a href="{{ url_for('dashboard.export_sensus_xls', tahun_record=selected_tahun, no_percobaan=selected_no_percobaan) }}"
+       class="btn btn-success btn-sm">
+      <i class="bi bi-file-earmark-excel"></i> Export Excel
+    </a>
+  </form>
+</div>
+
+<!-- Table -->
+<div class="table-responsive" style="max-height: 75vh; overflow-y: auto;">
+  <table class="table table-bordered table-sm align-middle text-center" style="font-size: 12px;">
+    <thead class="table-light">
+      <tr class="bg-secondary text-white">
+        <th colspan="5">🧾 Informasi Waktu & Identitas Percobaan</th>
+        <th colspan="6">🌱 Informasi Genetik Induk</th>
+        <th colspan="2">🌴 Posisi Tanaman</th>
+        <th colspan="2">📋 Data Sensus</th>
+      </tr>
+      <tr class="table-light text-dark fw-semibold">
+        <!-- 1️⃣ Informasi Waktu & Identitas Percobaan -->
+        <th>Tgl Pengamatan</th>
+        <th>Tahun</th>
+        <th>Bulan</th>
+        <th>No Percobaan</th>
+        <th>Crossing</th>
+
+        <!-- 2️⃣ Genetik Induk -->
+        <th>Female</th>
+        <th>Male</th>
+        <th>FGP Female</th>
+        <th>FGP Male</th>
+        <th>MGP Female</th>
+        <th>MGP Male</th>
+
+        <!-- 3️⃣ Posisi Tanaman -->
+        <th>No Baris</th>
+        <th>No Pohon</th>
+
+        <!-- 4️⃣ Data Sensus -->
+        <th>Sensus Tanaman</th>
+        <th>ID Pohon</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% if data %}
+        {% for row in data %}
+          <tr>
+            {% for col in headers %}
+              <td>{{ row[col] }}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr><td colspan="15" class="text-center text-muted">(Tidak ada data ditampilkan)</td></tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<!-- 📄 Pagination -->
+{% if page is defined and total_pages is defined %}
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center mt-3">
+    {% if page > 1 %}
+      <li class="page-item">
+        <a class="page-link"
+           href="{{ url_for('sensus_tanaman', page=page-1, tahun_record=selected_tahun, no_percobaan=selected_no_percobaan) }}">
+          Previous
+        </a>
+      </li>
+    {% endif %}
+
+    <li class="page-item disabled">
+      <span class="page-link">Halaman {{ page }} / {{ total_pages }}</span>
+    </li>
+
+    {% if page < total_pages %}
+      <li class="page-item">
+        <a class="page-link"
+           href="{{ url_for('sensus_tanaman', page=page+1, tahun_record=selected_tahun, no_percobaan=selected_no_percobaan) }}">
+          Next
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+
+<p class="text-center text-muted" style="font-size: 13px;">
+  Menampilkan <strong>{{ start_row }}–{{ end_row }}</strong> dari total <strong>{{ total_rows }}</strong> data.
+</p>
+{% endif %}
+
+<!-- 🔔 Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% endblock %}

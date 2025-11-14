@@ -1,20 +1,50 @@
 body {
-    margin: 0;
-    padding: 0;
-    font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
 }
 
 #wrapper {
-    min-height: 100vh;
+  min-height: 100vh;
 }
 
 #sidebar {
-    width: 250px;
-    min-height: 100vh;
-    background-color: #343a40;
+  width: 250px;
+  min-height: 100vh;
+  background-color: #343a40;
 }
 
 #sidebar .nav-link:hover {
-    background-color: #495057;
-    border-radius: 4px;
+  background-color: #495057;
+  border-radius: 4px;
+}
+
+.fixed-table-container {
+  max-height: 500px;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.table-fixed thead th {
+  position: sticky;
+  top: 0;
+  background-color: #343a40; /* warna .table-dark */
+  color: white;
+  z-index: 2;
+}
+.fixed-table-container {
+  max-height: 500px;
+  overflow-y: auto;
+}
+.nav-link.active {
+  color: #fff !important;
+  background-color: #198754 !important; /* Bootstrap hijau */
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.nav-link:hover {
+  background-color: #495057;
+  border-radius: 8px;
+  color: #fff !important;
 }

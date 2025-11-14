@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Master Data{% endblock %}
+
+{% block content %}
+
+<style>
+  /* 🌟 Fixed one-row toolbar */
+  .top-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: #fff;
+    padding: 10px 15px;
+    border-bottom: 1px solid #ddd;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    white-space: nowrap; /* prevent wrapping */
+    overflow-x: auto; /* allow horizontal scroll if too wide */
+  }
+
+  .top-toolbar label {
+    font-weight: 600;
+    margin-right: 4px;
+  }
+
+  .top-toolbar input[type="file"],
+  .top-toolbar select {
+    width: auto;
+    min-width: 150px;
+  }
+
+  .top-toolbar .btn {
+    white-space: nowrap;
+  }
+
+  .top-toolbar .input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* optional: make scroll bar invisible but still usable */
+  .top-toolbar::-webkit-scrollbar {
+    height: 6px;
+  }
+  .top-toolbar::-webkit-scrollbar-thumb {
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+  }
+</style>
+
+<h2 class="mb-3">Master Data</h2>
+
+<!-- 🔝 One-row toolbar -->
+<div class="top-toolbar shadow-sm">
+
+  <!-- 📤 Upload CSV -->
+  <form action="{{ url_for('dashboard.upload_csv_analisa_tandan') }}" method="POST" enctype="multipart/form-data" class="d-flex align-items-center gap-2 mb-0">
+    <label for="file" class="form-label mb-0"><strong>Upload CSV:</strong></label>
+    <input type="file" name="file" id="file" accept=".csv" class="form-control" required>
+    <button type="submit" class="btn btn-primary">Upload</button>
+  </form>
+
+  <!-- 🔍 Filters -->
+  <form method="get" action="{{ url_for('analisa_tandan') }}" class="d-flex align-items-center gap-2 mb-0">
+    <label for="no_percobaan" class="form-label mb-0">No Percobaan:</label>
+    <select name="no_percobaan" id="no_percobaan" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for item in no_percobaan_list %}
+        <option value="{{ item }}" {% if item == selected_no_percobaan %}selected{% endif %}>{{ item }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="tahun_record" class="form-label mb-0">Tahun:</label>
+    <select name="tahun_record" id="tahun_record" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for t in tahun_list %}
+        <option value="{{ t }}" {% if t|string == selected_tahun %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="bulan_record" class="form-label mb-0">Bulan:</label>
+    <select name="bulan_record" id="bulan_record" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for b in bulan_list %}
+        <option value="{{ b }}" {% if b|string == selected_bulan %}selected{% endif %}>
+          {{ ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][b-1] }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <!-- 📊 Export -->
+    <a href="{{ url_for('export_analisa_tandan_xls', no_percobaan=selected_no_percobaan, tahun_record=selected_tahun, bulan_record=selected_bulan) }}"
+       class="btn btn-success">
+       <i class="bi bi-file-earmark-excel"></i> Export
+    </a>
+  </form>
+
+</div>
+
+
+<!-- 🔽 Table Display -->
+<div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+    <table class="table table-bordered table-sm text-center align-middle"
+        style="width: 100%; font-size: 10px; white-space: nowrap; border-collapse: collapse;">
+        <thead class="table-light"
+            style="position: sticky; top: 0; z-index: 10;">
+            <tr class="bg-secondary text-white">
+                <th colspan="4">1️⃣ Identitas & Eksperimen</th>
+                <th colspan="7">2️⃣ Informasi Induk (Parental Information)</th>
+                <th colspan="9">3️⃣ Informasi Lapangan</th>
+                <th colspan="5">4️⃣ Informasi Lokasi & Penanaman</th>
+                <th colspan="5">5️⃣ Informasi Posisi & Genetik</th>
+            </tr>
+            <tr class="table-light text-dark fw-semibold">
+                {% for h in headers %}
+                <th>{{ h }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+
+        <tbody>
+            {% if data %}
+            {% for row in data %}
+            <tr>
+                {% for col in headers %}
+                <td>{{ row[col] }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            {% else %}
+            <tr>
+                <td colspan="{{ headers|length }}"
+                    class="text-center text-muted">
+                    (Tidak ada data ditampilkan)
+                </td>
+            </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+</div>
+<!-- Pagination -->
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        {% set q = request.args.to_dict() %}
+        {% if page > 1 %}
+        <li class="page-item">
+            <a class="page-link"
+                href="{{ url_for('master_data', page=page-1, no_percobaan=selected_no_percobaan) }}">
+                Previous
+            </a>
+        </li>
+        {% endif %}
+
+        <li class="page-item disabled">
+            <span class="page-link">Page {{ page }} / {{ total_pages }}</span>
+        </li>
+
+        {% if page < total_pages %}
+        <li class="page-item">
+            <a class="page-link"
+                href="{{ url_for('master_data', page=page+1, no_percobaan=selected_no_percobaan) }}">
+                Next
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+
+{% endblock %}

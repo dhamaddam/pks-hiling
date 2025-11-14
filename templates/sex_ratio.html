@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+{% block title %}🌸 Sex Ratio{% endblock %}
+
+{% block content %}
+<h2 class="mt-3 mb-3">🌸 Data Sex Ratio Tanaman</h2>
+
+<!-- 🌿 Toolbar -->
+<div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+
+  <!-- 📤 Upload CSV -->
+  <form action="{{ url_for('dashboard.upload_csv_sex_ratio') }}" method="POST" enctype="multipart/form-data"
+        class="d-flex align-items-center gap-2">
+    <label for="file" class="form-label mb-0"><strong>Upload CSV:</strong></label>
+    <input type="file" name="file" id="file" accept=".csv"
+           class="form-control form-control-sm" required>
+    <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+  </form>
+
+  <!-- 🔍 Filters + Export -->
+  <form method="get" action="{{ url_for('sex_ratio') }}" class="d-flex align-items-center gap-2 mb-0">
+    <label for="tahun_record" class="form-label mb-0">Tahun:</label>
+    <select name="tahun_record" id="tahun_record" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for t in tahun_list %}
+        <option value="{{ t }}" {% if t|string == selected_tahun %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="bulan_record" class="form-label mb-0">Bulan:</label>
+    <select name="bulan_record" id="bulan_record" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for b in bulan_list %}
+        <option value="{{ b }}" {% if b|string == selected_bulan %}selected{% endif %}>
+          {{ ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'][b|int - 1] }}
+        </option>
+      {% endfor %}
+    </select>
+
+    <label for="no_percobaan" class="form-label mb-0">Percobaan:</label>
+    <select name="no_percobaan" id="no_percobaan" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for n in no_percobaan_list %}
+        <option value="{{ n }}" {% if n|string == selected_no_percobaan %}selected{% endif %}>{{ n }}</option>
+      {% endfor %}
+    </select>
+
+    <a href="{{ url_for('dashboard.export_sex_ratio_xls', tahun_record=selected_tahun, bulan_record=selected_bulan, no_percobaan=selected_no_percobaan) }}"
+       class="btn btn-success btn-sm">
+      <i class="bi bi-file-earmark-excel"></i> Export Excel
+    </a>
+  </form>
+</div>
+
+<!-- 🌾 Data Table -->
+<div class="table-responsive" style="max-height: 75vh; overflow-y: auto;">
+  <table class="table table-bordered table-sm text-center align-middle"
+         style="font-size: 12px; white-space: nowrap; border-collapse: collapse;">
+    <thead class="table-light" style="position: sticky; top: 0; z-index: 10;">
+      <tr class="bg-secondary text-white">
+        <th colspan="5">🧾 Informasi Waktu & Identitas Percobaan</th>
+        <th colspan="3">🌴 Posisi Tanaman</th>
+        <th colspan="5">🌸 Data Jenis Kelamin Bunga</th>
+        <th colspan="1">📊 Rasio Jenis Kelamin</th>
+      </tr>
+      <tr class="table-light text-dark fw-semibold">
+        <!-- 1️⃣ Identitas Waktu & Percobaan -->
+        <th>Tahun</th>
+        <th>Bulan</th>
+        <th>No Percobaan</th>
+        <th>Female</th>
+        <th>Male</th>
+
+        <!-- 2️⃣ Posisi Tanaman -->
+        <th>No Baris</th>
+        <th>No Pohon</th>
+        <th>ID Pohon</th> <!-- ✅ Tambahkan di sini -->
+
+        <!-- 3️⃣ Data Jenis Kelamin Bunga -->
+        <th>Jantan</th>
+        <th>Betina</th>
+        <th>Banci</th>
+        <th>Dompet</th>
+        <th>Pelepah</th>
+
+        <!-- 4️⃣ Rasio Jenis Kelamin -->
+        <th>% Sex Ratio</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% if data %}
+        {% for row in data %}
+          <tr>
+            {% for col in headers %}
+              <td>{{ row[col] }}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="14" class="text-muted text-center">(Tidak ada data ditampilkan)</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<!-- 📄 Pagination -->
+{% if page is defined and total_pages is defined %}
+<nav aria-label="Page navigation">
+  <ul class="pagination justify-content-center mt-3">
+    {% if page > 1 %}
+      <li class="page-item">
+        <a class="page-link"
+           href="{{ url_for('sex_ratio', page=page-1, tahun_record=selected_tahun, bulan_record=selected_bulan, no_percobaan=selected_no_percobaan) }}">
+          Previous
+        </a>
+      </li>
+    {% endif %}
+
+    <li class="page-item disabled">
+      <span class="page-link">Halaman {{ page }} / {{ total_pages }}</span>
+    </li>
+
+    {% if page < total_pages %}
+      <li class="page-item">
+        <a class="page-link"
+           href="{{ url_for('sex_ratio', page=page+1, tahun_record=selected_tahun, bulan_record=selected_bulan, no_percobaan=selected_no_percobaan) }}">
+          Next
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</nav>
+{% endif %}
+
+<!-- 🔔 Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    {% for category, msg in messages %}
+      <div class="alert alert-{{ category }} alert-dismissible fade show mt-3" role="alert">
+        {{ msg }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+      </div>
+    {% endfor %}
+  {% endif %}
+{% endwith %}
+
+{% endblock %}

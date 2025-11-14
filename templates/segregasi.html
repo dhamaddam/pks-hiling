@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}🌰 Segregasi{% endblock %}
+
+{% block content %}
+<h2 class="mt-3 mb-3">🌰 Data Segregasi (Fenotipe Buah)</h2>
+
+<!-- Toolbar -->
+<div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+  <!-- Upload CSV -->
+  <form action="{{ url_for('dashboard.upload_csv_segregasi') }}" method="POST" enctype="multipart/form-data"
+        class="d-flex align-items-center gap-2">
+    <label for="file" class="form-label mb-0"><strong>Upload CSV:</strong></label>
+    <input type="file" name="file" id="file" accept=".csv"
+           class="form-control form-control-sm" required>
+    <button type="submit" class="btn btn-primary btn-sm">Upload</button>
+  </form>
+
+  <!-- Filters -->
+  <form method="get" action="{{ url_for('segregasi') }}" class="d-flex align-items-center gap-2 mb-0">
+    <label for="tahun_record" class="form-label mb-0">Tahun:</label>
+    <select name="tahun_record" id="tahun_record" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for t in tahun_list %}
+        <option value="{{ t }}" {% if t|string == selected_tahun %}selected{% endif %}>{{ t }}</option>
+      {% endfor %}
+    </select>
+
+    <label for="no_percobaan" class="form-label mb-0">No Percobaan:</label>
+    <select name="no_percobaan" id="no_percobaan" class="form-select form-select-sm" onchange="this.form.submit()">
+      <option value="">Semua</option>
+      {% for n in no_percobaan_list %}
+        <option value="{{ n }}" {% if n|string == selected_no_percobaan %}selected{% endif %}>{{ n }}</option>
+      {% endfor %}
+    </select>
+
+    <a href="{{ url_for('dashboard.export_segregasi_xls', tahun_record=selected_tahun, no_percobaan=selected_no_percobaan) }}"
+       class="btn btn-success btn-sm">
+      <i class="bi bi-file-earmark-excel"></i> Export Excel
+    </a>
+  </form>
+</div>
+
+<!-- Table -->
+<div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+  <table class="table table-bordered table-sm text-center align-middle" style="font-size: 12px;">
+    <thead class="table-light">
+      <tr class="bg-secondary text-white">
+        <th colspan="6">🧾 Informasi Waktu & Identitas Percobaan</th>
+        <th colspan="3">🌴 Posisi Tanaman</th>
+        <th colspan="2">🍈 Hasil Pengamatan (Fenotipe)</th>
+      </tr>
+      <tr>
+        <!-- 1️⃣ Informasi Waktu & Identitas Percobaan -->
+        <th>Tanggal Pengamatan</th>
+        <th>Tahun</th>
+        <th>Bulan</th>
+        <th>No Percobaan</th>
+        <th>Female</th>
+        <th>Male</th>
+
+        <!-- 2️⃣ Posisi Tanaman -->
+        <th>No Baris</th>
+        <th>No Pohon</th>
+        <th>ID Pohon</th>
+
+        <!-- 3️⃣ Fenotipe -->
+        <th>Tipe Buah</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      {% if data %}
+        {% for row in data %}
+          <tr>
+            {% for col in headers %}
+              <td>{{ row[col] }}</td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="11" class="text-center text-muted">(Tidak ada data ditampilkan)</td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+
+{% endblock %}

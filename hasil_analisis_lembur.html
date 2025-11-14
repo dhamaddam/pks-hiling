@@ -1,0 +1,80 @@
+
+<html>
+<head>
+    <title>Analisis Lembur per Bagian</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        select {
+            padding: 8px;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+
+<h2>📊 Analisis Lembur per Bagian</h2>
+<label>Pilih Bulan: </label>
+<select id="bulan" onchange="updateGraph()">
+    <option value="September 2025">September 2025</option>
+<option value="October 2025">October 2025</option>
+</select>
+
+<div id="grafik_frekuensi"></div>
+<div id="grafik_jam"></div>
+<div id="grafik_tarif"></div>
+
+<script>
+var data = [{'Bulan': 'September 2025', 'Nama Bagian': 'Administrasi/Sdm - Unit Marihat', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Bagian Keuangan - Unit Marihat', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Bagian Keuangan, Sdm Dan Umum', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Bagian Rumah Tangga - Unit Marihat', 'Frekuensi_Lembur': 17.0, 'Total_Jam': 306.15, 'Total_Tarif': 6271696.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Kebun Produksi - Unit Marihat', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Kelompok Peneliti Pemuliaan Tanaman', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 1.25, 'Total_Tarif': 2324.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Kelompok Peneliti Proteksi Tanaman', 'Frekuensi_Lembur': 4.0, 'Total_Jam': 15.666666666666668, 'Total_Tarif': 203291.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Kelompok Penelitian Mekanisasi Pasca Panen Dan Konservasi Lingkungan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Management Representative Iso (Ad Hoc)', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 4.0, 'Total_Tarif': 73704.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Akuntansi Dan Perencanaan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Asesmen Risiko (Risk Assessment) Spi Regional I', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Breeding Research For Development', 'Frekuensi_Lembur': 2.0, 'Total_Jam': 12.25, 'Total_Tarif': 215019.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Inovasi, Inkubasi Dan Pengembangan Bisnis', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 25.766666666666666, 'Total_Tarif': 654881.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Kemitraan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Keuangan', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 12.6, 'Total_Tarif': 289605.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Kultur Jaringan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Laboratorium Pelayanan Medan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Legal', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Opstp', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Pemasaran Dan Logistik', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 12.0, 'Total_Tarif': 255129.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Penelitian', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Pengadaan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Pohon Induk', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Product Support', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Produksi', 'Frekuensi_Lembur': 4.0, 'Total_Jam': 502.0, 'Total_Tarif': 11206988.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Qc-Qa', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 4.0, 'Total_Tarif': 106685.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Rumah Tangga Dan Inventaris', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Sumber Daya Manusia Dan Sekretariat', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Teknologi Informasi', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 4.0, 'Total_Tarif': 79373.0}, {'Bulan': 'September 2025', 'Nama Bagian': 'Sub Bagian Urusan Pelayanan Jasa Konsultansi Dan Pelatihan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Administrasi/Sdm - Unit Marihat', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Bagian Keuangan - Unit Marihat', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Bagian Keuangan, Sdm Dan Umum', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Bagian Rumah Tangga - Unit Marihat', 'Frekuensi_Lembur': 5.0, 'Total_Jam': 34.0, 'Total_Tarif': 687605.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Kebun Produksi - Unit Marihat', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Kelompok Peneliti Pemuliaan Tanaman', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Kelompok Peneliti Proteksi Tanaman', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Kelompok Penelitian Mekanisasi Pasca Panen Dan Konservasi Lingkungan', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 16.0, 'Total_Tarif': 363643.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Management Representative Iso (Ad Hoc)', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Akuntansi Dan Perencanaan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Asesmen Risiko (Risk Assessment) Spi Regional I', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Breeding Research For Development', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Inovasi, Inkubasi Dan Pengembangan Bisnis', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Kemitraan', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 1.4666666666666668, 'Total_Tarif': 35121.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Keuangan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Kultur Jaringan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Laboratorium Pelayanan Medan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Legal', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Opstp', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Pemasaran Dan Logistik', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Penelitian', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Pengadaan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Pohon Induk', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Product Support', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Produksi', 'Frekuensi_Lembur': 1.0, 'Total_Jam': 3.0, 'Total_Tarif': 62365.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Qc-Qa', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Rumah Tangga Dan Inventaris', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Sumber Daya Manusia Dan Sekretariat', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Teknologi Informasi', 'Frekuensi_Lembur': 2.0, 'Total_Jam': 17.6, 'Total_Tarif': 515248.0}, {'Bulan': 'October 2025', 'Nama Bagian': 'Sub Bagian Urusan Pelayanan Jasa Konsultansi Dan Pelatihan', 'Frekuensi_Lembur': 0.0, 'Total_Jam': 0.0, 'Total_Tarif': 0.0}];
+
+function updateGraph() {
+    var bulanDipilih = document.getElementById('bulan').value;
+    var filtered = data.filter(d => d.Bulan === bulanDipilih);
+
+    var bagian = filtered.map(d => d['Nama Bagian']);
+    var frek = filtered.map(d => d['Frekuensi_Lembur']);
+    var jam = filtered.map(d => d['Total_Jam']);
+    var tarif = filtered.map(d => d['Total_Tarif']);
+
+    var trace1 = {
+        x: bagian,
+        y: frek,
+        type: 'bar',
+        marker: {color: '#3498db'}
+    };
+
+    var trace2 = {
+        x: bagian,
+        y: jam,
+        type: 'bar',
+        marker: {color: '#27ae60'}
+    };
+
+    var trace3 = {
+        x: bagian,
+        y: tarif,
+        type: 'bar',
+        marker: {color: '#e67e22'}
+    };
+
+    var layout1 = { title: 'Frekuensi Lembur per Bagian (' + bulanDipilih + ')', xaxis: {title: 'Bagian'}, yaxis: {title: 'Frekuensi'} };
+    var layout2 = { title: 'Total Jam Lembur per Bagian (' + bulanDipilih + ')', xaxis: {title: 'Bagian'}, yaxis: {title: 'Jam'} };
+    var layout3 = { title: 'Total Tarif Lembur per Bagian (' + bulanDipilih + ')', xaxis: {title: 'Bagian'}, yaxis: {title: 'Tarif (Rp)'} };
+
+    Plotly.newPlot('grafik_frekuensi', [trace1], layout1);
+    Plotly.newPlot('grafik_jam', [trace2], layout2);
+    Plotly.newPlot('grafik_tarif', [trace3], layout3);
+}
+
+updateGraph(); // tampilkan awal
+</script>
+
+</body>
+</html>

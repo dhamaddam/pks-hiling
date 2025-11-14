@@ -9,7 +9,7 @@ User=www-data
 Group=ubuntu
 WorkingDirectory=/usr/bin/bots/pks-hiling
 Environment="PATH=/usr/bin/bots/pks-hiling/environtments/rest_serve/bin"
-ExecStart=/usr/local/bin/gunicorn --workers 3 --bind unix:ganoderma.sock -m 007 wsgi:app
+ExecStart=/usr/local/bin/gunicorn --workers 3 --bind unix:pks-hiling.sock -m 007 wsgi:app
 
 [Install]
 WantedBy=multi-user.target

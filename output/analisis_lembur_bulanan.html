@@ -1,0 +1,128 @@
+
+<html>
+<head>
+    <title>Analisis Lembur Per Bagian - Filter Bulanan</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 30px;
+        }
+        select {
+            padding: 8px;
+            font-size: 15px;
+            margin-bottom: 20px;
+        }
+        h2 {
+            color: #2c3e50;
+        }
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin-bottom: 30px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+    </style>
+</head>
+<body>
+
+<h2>📊 Analisis Lembur Per Bagian</h2>
+<label><b>Pilih Bulan:</b></label>
+<select id="bulanSelect" onchange="updateDashboard()">
+    <option value="September 2025">September 2025</option>
+<option value="October 2025">October 2025</option>
+</select>
+
+<div id="tabel_rekap"></div>
+<div id="grafik1"></div>
+<div id="grafik2"></div>
+<div id="grafik3"></div>
+
+<script>
+var data = [{"Bulan": "October 2025", "Nama Bagian": "Bagian Rumah Tangga - Unit Marihat", "Frekuensi_Lembur": 5, "Total_Jam": 34.0, "Total_Tarif": 687605.0}, {"Bulan": "October 2025", "Nama Bagian": "Sub Bagian Teknologi Informasi", "Frekuensi_Lembur": 2, "Total_Jam": 17.6, "Total_Tarif": 515248.0}, {"Bulan": "October 2025", "Nama Bagian": "Kelompok Penelitian Mekanisasi Pasca Panen dan Konservasi Lingkungan", "Frekuensi_Lembur": 1, "Total_Jam": 16.0, "Total_Tarif": 363643.0}, {"Bulan": "October 2025", "Nama Bagian": "Sub Bagian Produksi", "Frekuensi_Lembur": 1, "Total_Jam": 3.0, "Total_Tarif": 62365.0}, {"Bulan": "October 2025", "Nama Bagian": "Sub Bagian Kemitraan", "Frekuensi_Lembur": 1, "Total_Jam": 1.4666666666666668, "Total_Tarif": 35121.0}, {"Bulan": "September 2025", "Nama Bagian": "Sub Bagian Produksi", "Frekuensi_Lembur": 4, "Total_Jam": 502.0, "Total_Tarif": 11206988.0}, {"Bulan": "September 2025", "Nama Bagian": "Bagian Rumah Tangga - Unit Marihat", "Frekuensi_Lembur": 17, "Total_Jam": 306.15, "Total_Tarif": 6271696.0}, {"Bulan": "September 2025", "Nama Bagian": "Sub Bagian Inovasi, Inkubasi dan Pengembangan Bisnis", "Frekuensi_Lembur": 1, "Total_Jam": 25.766666666666666, "Total_Tarif": 654881.0}, {"Bulan": "September 2025", "Nama Bagian": "Sub Bagian Keuangan", "Frekuensi_Lembur": 1, "Total_Jam": 12.6, "Total_Tarif": 289605.0}, {"Bulan": "September 2025", "Nama Bagian": "Sub Bagian Pemasaran dan Logistik", "Frekuensi_Lembur": 1, "Total_Jam": 12.0, "Total_Tarif": 255129.0}, {"Bulan": "September 2025", "Nama Bagian": "Sub Bagian Breeding Research for Development", "Frekuensi_Lembur": 2, "Total_Jam": 12.25, "Total_Tarif": 215019.0}, {"Bulan": "September 2025", "Nama Bagian": "Kelompok Peneliti Proteksi Tanaman", "Frekuensi_Lembur": 4, "Total_Jam": 15.666666666666668, "Total_Tarif": 203291.0}, {"Bulan": "September 2025", "Nama Bagian": "Sub Bagian QC-QA", "Frekuensi_Lembur": 1, "Total_Jam": 4.0, "Total_Tarif": 106685.0}, {"Bulan": "September 2025", "Nama Bagian": "Sub Bagian Teknologi Informasi", "Frekuensi_Lembur": 1, "Total_Jam": 4.0, "Total_Tarif": 79373.0}, {"Bulan": "September 2025", "Nama Bagian": "Management Representative ISO (Ad Hoc)", "Frekuensi_Lembur": 1, "Total_Jam": 4.0, "Total_Tarif": 73704.0}, {"Bulan": "September 2025", "Nama Bagian": "Kelompok Peneliti Pemuliaan Tanaman", "Frekuensi_Lembur": 1, "Total_Jam": 1.25, "Total_Tarif": 2324.0}];
+
+function updateDashboard() {
+    var bulan = document.getElementById('bulanSelect').value;
+    var filtered = data.filter(d => d.Bulan === bulan);
+
+    // === Buat Tabel ===
+    var tableHTML = "<table><tr><th>Nama Bagian</th><th>Frekuensi</th><th>Total Jam</th><th>Total Tarif</th></tr>";
+    filtered.forEach(d => {
+        tableHTML += `<tr>
+            <td>${d['Nama Bagian']}</td>
+            <td>${d['Frekuensi_Lembur']}</td>
+            <td>${d['Total_Jam'].toFixed(2)}</td>
+            <td>${d['Total_Tarif'].toLocaleString('id-ID')}</td>
+        </tr>`;
+    });
+    tableHTML += "</table>";
+    document.getElementById('tabel_rekap').innerHTML = "<h3>Rekapitulasi Lembur Bulan " + bulan + "</h3>" + tableHTML;
+
+    // === Siapkan Data Grafik ===
+    var bagian = filtered.map(d => d['Nama Bagian']);
+    var frek = filtered.map(d => d['Frekuensi_Lembur']);
+    var jam = filtered.map(d => d['Total_Jam']);
+    var tarif = filtered.map(d => d['Total_Tarif']);
+
+    // Grafik 1: Frekuensi & Jam
+    var trace1 = {
+        x: bagian,
+        y: frek,
+        type: 'bar',
+        name: 'Frekuensi Lembur',
+        marker: {color: '#3498db'}
+    };
+    var trace2 = {
+        x: bagian,
+        y: jam,
+        type: 'line',
+        name: 'Total Jam',
+        marker: {color: '#e67e22'}
+    };
+    Plotly.newPlot('grafik1', [trace1, trace2], {
+        title: 'Frekuensi & Total Jam per Bagian (' + bulan + ')',
+        barmode: 'group',
+        xaxis: {title: 'Nama Bagian'},
+        yaxis: {title: 'Nilai'},
+        template: 'plotly_white'
+    });
+
+    // Grafik 2: Total Tarif
+    var trace3 = {
+        x: bagian,
+        y: tarif,
+        type: 'bar',
+        name: 'Total Tarif',
+        marker: {color: '#2ecc71'}
+    };
+    Plotly.newPlot('grafik2', [trace3], {
+        title: 'Total Tarif Permohonan per Bagian (' + bulan + ')',
+        xaxis: {title: 'Nama Bagian'},
+        yaxis: {title: 'Total Tarif (Rp)'},
+        template: 'plotly_white'
+    });
+
+    // Grafik 3: Pie Chart
+    var trace4 = {
+        labels: bagian,
+        values: tarif,
+        type: 'pie',
+        hole: 0.4
+    };
+    Plotly.newPlot('grafik3', [trace4], {
+        title: 'Persentase Total Tarif per Bagian (' + bulan + ')',
+        template: 'plotly_white'
+    });
+}
+
+updateDashboard(); // jalankan pertama kali
+</script>
+</body>
+</html>
