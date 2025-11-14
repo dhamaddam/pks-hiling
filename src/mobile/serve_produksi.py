@@ -12,7 +12,6 @@ class serveProduksi:
         os.makedirs(self.UPLOAD_FOLDER, exist_ok=True)
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
         self.csv_file = os.path.join(self.base_dir, '..', '..', 'hasil_nsp.csv')
-
         # ✅ Database configuration
         self.db_config = {
             'host': '43.218.37.170',
