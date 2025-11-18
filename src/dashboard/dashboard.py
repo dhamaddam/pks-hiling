@@ -228,7 +228,7 @@ class Dashboard:
                 cursor.execute("SELECT DISTINCT bulan FROM produksi ORDER BY bulan ASC")
                 bulan_list = [row['bulan'] for row in cursor.fetchall()]
 
-                cursor.execute("SELECT DISTINCT expt_num FROM produksi ORDER BY no_percobaan ASC")
+                cursor.execute("SELECT DISTINCT no_percobaan,expt_num FROM produksi ORDER BY no_percobaan ASC")
                 no_percobaan_list = [row['expt_num'] for row in cursor.fetchall()]
 
                 # Dynamic filter

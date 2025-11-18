@@ -98,6 +98,7 @@ class serveProduksi:
                 cursor.execute("SELECT * FROM produksi WHERE id=%s", (id,))
             else:
                 cursor.execute("SELECT * FROM produksi")
+
             
             result = cursor.fetchall()
             conn.close()
