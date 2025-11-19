@@ -2,17 +2,19 @@ import os
 import pymysql
 from datetime import datetime
 from flask import Blueprint, request, jsonify
+from src.helper.Logfile import LogFile
 
-# 🔹 Blueprint (no prefix, clean routes)
 analisa_tandan_module = Blueprint('analisa_tandan_module', __name__)
 
 class serveAnalisaTandan:
     def __init__(self):
+        self.logging = LogFile("daemon")
+        self.logging.write("info", "serveAnalisaTandan initialized")
+
         self.UPLOAD_FOLDER = 'uploads'
         os.makedirs(self.UPLOAD_FOLDER, exist_ok=True)
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # ✅ Database connection configuration
         self.db_config = {
             'host': '43.218.37.170',
             'user': 'iopri',
@@ -21,10 +23,11 @@ class serveAnalisaTandan:
             'cursorclass': pymysql.cursors.DictCursor
         }
 
-    # =====================
-    # 🔹 FIELD MAPPING
-    # =====================
+    # ===========================
+    # FIELD MAPPING
+    # ===========================
     def get_analisa_mapping(self):
+        self.logging.write("info", "get_analisa_mapping called")
         return {
             "id": "id",
             "tanggal_panen": "tanggal_panen",
@@ -87,27 +90,41 @@ class serveAnalisaTandan:
             "created_at": "created_at"
         }
 
-    # 🔁 JSON → DB
+    # ===========================
+    # JSON → DB
+    # ===========================
     def map_to_db(self, payload):
+        self.logging.write("info", f"map_to_db called with payload: {payload}")
         mapping = self.get_analisa_mapping()
         result = {}
+
         for key, val in payload.items():
             if key in mapping:
                 result[mapping[key]] = val
+
         if 'created_at' not in result:
             result['created_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        self.logging.write("info", f"map_to_db result: {result}")
         return result
 
-    # 🔁 DB → JSON
+    # ===========================
+    # DB → JSON
+    # ===========================
     def map_to_mobile(self, db_row):
+        self.logging.write("info", f"map_to_mobile called with row: {db_row}")
         mapping = self.get_analisa_mapping()
         reverse_map = {v: k for k, v in mapping.items()}
-        return {reverse_map[k]: v for k, v in db_row.items() if k in reverse_map}
+        result = {reverse_map[k]: v for k, v in db_row.items() if k in reverse_map}
+        self.logging.write("info", f"map_to_mobile result: {result}")
+        return result
 
-    # =====================
-    # 💾 INSERT DATA
-    # =====================
+    # ===========================
+    # INSERT DATA
+    # ===========================
     def insert_analisa_tandan(self, payload):
+        self.logging.write("info", f"insert_analisa_tandan called with: {payload}")
+
         data = self.map_to_db(payload)
         placeholders = ", ".join(["%s"] * len(data))
         columns = ", ".join(data.keys())
@@ -120,48 +137,74 @@ class serveAnalisaTandan:
                 cursor.execute(query, values)
                 conn.commit()
             conn.close()
+
+            self.logging.write("info", "Insert success")
             return {"status": "success", "message": "Analisa Tandan data inserted successfully"}
+
         except Exception as e:
+            self.logging.write("error", f"Insert error: {str(e)}")
             return {"status": "error", "message": str(e)}
 
-    # =====================
-    # 📥 GET DATA
-    # =====================
+    # ===========================
+    # GET DATA
+    # ===========================
     def get_analisa_tandan(self, id=None):
-        conn = pymysql.connect(**self.db_config)
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        self.logging.write("info", f"get_analisa_tandan called, id={id}")
+
         try:
+            conn = pymysql.connect(**self.db_config)
+            cursor = conn.cursor()
+
             if id:
                 cursor.execute("SELECT * FROM analisa_tandan WHERE id=%s", (id,))
             else:
                 cursor.execute("SELECT * FROM analisa_tandan ORDER BY created_at DESC")
+
             result = cursor.fetchall()
             conn.close()
-            return [self.map_to_mobile(row) for row in result]
+
+            mapped_data = [self.map_to_mobile(row) for row in result]
+            self.logging.write("info", f"get_analisa_tandan result count: {len(mapped_data)}")
+
+            return mapped_data
+
         except Exception as e:
+            self.logging.write("error", f"Get error: {str(e)}")
             return {"status": "error", "message": str(e)}
 
 
 # ==========================================================
-# 🔹 ROUTES
+# ROUTES
 # ==========================================================
 
 analisa_service = serveAnalisaTandan()
 
 @analisa_tandan_module.route('/api/insert', methods=['POST', 'GET'])
 def api_insert_analisa_tandan():
-    if request.method == 'POST':
-        if not request.is_json:
-            return jsonify({
-                "status": "error",
-                "message": "Content-Type must be application/json"
-            }), 415
+    try:
+        analisa_service.logging.write("info", "api_insert_analisa_tandan hit")
 
-        payload = request.get_json()
-        result = analisa_service.insert_analisa_tandan(payload)
-        return jsonify(result)
+        if request.method == 'POST':
+            if not request.is_json:
+                analisa_service.logging.write("error", "Invalid Content-Type")
+                return jsonify({
+                    "status": "error",
+                    "message": "Content-Type must be application/json"
+                }), 415
 
-    elif request.method == 'GET':
-        id = request.args.get('id')
-        data = analisa_service.get_analisa_tandan(id)
-        return jsonify(data)
+            payload = request.get_json()
+            analisa_service.logging.write("info", f"Received POST payload: {payload}")
+
+            result = analisa_service.insert_analisa_tandan(payload)
+            return jsonify(result)
+
+        elif request.method == 'GET':
+            id = request.args.get('id')
+            analisa_service.logging.write("info", f"Received GET id={id}")
+
+            data = analisa_service.get_analisa_tandan(id)
+            return jsonify(data)
+
+    except Exception as e:
+        analisa_service.logging.write("error", f"Route error: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)})

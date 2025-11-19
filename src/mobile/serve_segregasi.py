@@ -2,18 +2,21 @@ import os
 import pymysql
 from datetime import datetime
 from flask import Blueprint, request, jsonify
+from src.helper.Logfile import LogFile
 
 # 🔹 Blueprint name and base URL
 segregasi_module = Blueprint('segregasi_module', __name__)
 
 class serveSegregasi:
     def __init__(self):
-        # Optional upload folder
+        self.logging = LogFile("daemon")
+        self.logging.write("info", "serveSegregasi initialized")
+
         self.UPLOAD_FOLDER = 'uploads'
         os.makedirs(self.UPLOAD_FOLDER, exist_ok=True)
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # ✅ Database connection configuration
+        # Database configuration
         self.db_config = {
             'host': '43.218.37.170',
             'user': 'iopri',
@@ -23,9 +26,10 @@ class serveSegregasi:
         }
 
     # =====================
-    # 🔹 MAPPING DATA
+    # FIELD MAPPING
     # =====================
     def get_segregasi_mapping(self):
+        self.logging.write("info", "get_segregasi_mapping called")
         return {
             "id": "id",
             "tgl_pengamatan": "tgl_pengamatan",
@@ -41,29 +45,44 @@ class serveSegregasi:
             "created_at": "created_at"
         }
 
-    # 🔁 Convert JSON → DB
+    # =====================
+    # JSON → DB
+    # =====================
     def map_to_db(self, payload):
+        self.logging.write("info", f"map_to_db called with payload: {payload}")
+
         mapping = self.get_segregasi_mapping()
         result = {}
         for key, val in payload.items():
             if key in mapping:
                 result[mapping[key]] = val
 
-        # Add timestamp automatically
         if 'created_at' not in result:
             result['created_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        self.logging.write("info", f"map_to_db result: {result}")
         return result
 
-    # 🔁 Convert DB → JSON for mobile response
+    # =====================
+    # DB → JSON
+    # =====================
     def map_to_mobile(self, db_row):
+        self.logging.write("info", f"map_to_mobile called with row: {db_row}")
+
         mapping = self.get_segregasi_mapping()
         reverse_map = {v: k for k, v in mapping.items()}
-        return {reverse_map[k]: v for k, v in db_row.items() if k in reverse_map}
+
+        result = {reverse_map[k]: v for k, v in db_row.items() if k in reverse_map}
+
+        self.logging.write("info", f"map_to_mobile result: {result}")
+        return result
 
     # =====================
-    # 💾 INSERT DATA
+    # INSERT
     # =====================
     def insert_segregasi(self, payload):
+        self.logging.write("info", f"insert_segregasi called with: {payload}")
+
         data = self.map_to_db(payload)
         placeholders = ", ".join(["%s"] * len(data))
         columns = ", ".join(data.keys())
@@ -71,53 +90,84 @@ class serveSegregasi:
 
         query = f"INSERT INTO segregasi ({columns}) VALUES ({placeholders})"
 
+        self.logging.write("info", f"Executing SQL: {query}")
+        self.logging.write("info", f"Values: {values}")
+
         try:
             conn = pymysql.connect(**self.db_config)
             with conn.cursor() as cursor:
                 cursor.execute(query, values)
                 conn.commit()
             conn.close()
+
+            self.logging.write("info", "Insert segregasi success")
             return {"status": "success", "message": "Segregasi data inserted successfully"}
+
         except Exception as e:
+            self.logging.write("error", f"Insert error: {str(e)}")
             return {"status": "error", "message": str(e)}
 
     # =====================
-    # 📥 GET DATA
+    # GET
     # =====================
     def get_segregasi(self, id=None):
-        conn = pymysql.connect(**self.db_config)
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        self.logging.write("info", f"get_segregasi called, id={id}")
+
         try:
+            conn = pymysql.connect(**self.db_config)
+            cursor = conn.cursor(pymysql.cursors.DictCursor)
+
             if id:
-                cursor.execute("SELECT * FROM segregasi WHERE id=%s", (id,))
+                query = "SELECT * FROM segregasi WHERE id=%s"
+                self.logging.write("info", f"Executing SQL: {query} | id={id}")
+                cursor.execute(query, (id,))
             else:
-                cursor.execute("SELECT * FROM segregasi ORDER BY created_at DESC")
+                query = "SELECT * FROM segregasi ORDER BY created_at DESC"
+                self.logging.write("info", f"Executing SQL: {query}")
+                cursor.execute(query)
 
             result = cursor.fetchall()
             conn.close()
 
-            return [self.map_to_mobile(row) for row in result]
+            mapped = [self.map_to_mobile(row) for row in result]
+            self.logging.write("info", f"get_segregasi result count: {len(mapped)}")
+
+            return mapped
+
         except Exception as e:
+            self.logging.write("error", f"Get error: {str(e)}")
             return {"status": "error", "message": str(e)}
 
 
 # ==========================================================
-# 🔹 API ROUTES
+# ROUTES
 # ==========================================================
 
 segregasi_service = serveSegregasi()
 
 @segregasi_module.route('/api/insert', methods=['POST', 'GET'])
 def api_insert_segregasi():
-    if request.method == 'POST':
-        if not request.is_json:
-            return jsonify({"status": "error", "message": "Content-Type must be application/json"}), 415
+    try:
+        segregasi_service.logging.write("info", "api_insert_segregasi hit")
 
-        payload = request.get_json()
-        result = segregasi_service.insert_segregasi(payload)
-        return jsonify(result)
+        if request.method == 'POST':
+            if not request.is_json:
+                segregasi_service.logging.write("error", "Invalid Content-Type")
+                return jsonify({"status": "error", "message": "Content-Type must be application/json"}), 415
 
-    elif request.method == 'GET':
-        id = request.args.get('id')
-        data = segregasi_service.get_segregasi(id)
-        return jsonify(data)
+            payload = request.get_json()
+            segregasi_service.logging.write("info", f"POST payload: {payload}")
+
+            result = segregasi_service.insert_segregasi(payload)
+            return jsonify(result)
+
+        elif request.method == 'GET':
+            id = request.args.get('id')
+            segregasi_service.logging.write("info", f"GET id={id}")
+
+            data = segregasi_service.get_segregasi(id)
+            return jsonify(data)
+
+    except Exception as e:
+        segregasi_service.logging.write("error", f"Route error: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)})

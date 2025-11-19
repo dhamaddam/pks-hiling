@@ -2,18 +2,21 @@ import os
 import pymysql
 from datetime import datetime
 from flask import Blueprint, request, jsonify
+from src.helper.Logfile import LogFile
 
-# 🔹 Blueprint name and URL prefix
+# 🔹 Blueprint
 vegetatif_module = Blueprint('vegetatif_module', __name__)
 
 class serveVegetatif:
     def __init__(self):
-        # Optional upload folder (if needed later)
+        self.logging = LogFile("daemon")
+        self.logging.write("info", "serveVegetatif initialized")
+
         self.UPLOAD_FOLDER = 'uploads'
         os.makedirs(self.UPLOAD_FOLDER, exist_ok=True)
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # ✅ Database configuration
+        # Database config
         self.db_config = {
             'host': '43.218.37.170',
             'user': 'iopri',
@@ -23,9 +26,10 @@ class serveVegetatif:
         }
 
     # =====================
-    # 🔹 FIELD MAPPING
+    # FIELD MAPPING
     # =====================
     def get_vegetatif_mapping(self):
+        self.logging.write("info", "get_vegetatif_mapping called")
         return {
             "id": "id",
             "expt_num": "expt_num",
@@ -67,28 +71,45 @@ class serveVegetatif:
             "created_at": "created_at"
         }
 
-    # 🔁 Convert JSON → DB format
+    # =====================
+    # JSON → DB
+    # =====================
     def map_to_db(self, payload):
+        self.logging.write("info", f"map_to_db called with payload: {payload}")
+
         mapping = self.get_vegetatif_mapping()
         result = {}
+
         for key, val in payload.items():
             if key in mapping:
                 result[mapping[key]] = val
-        # Auto timestamp
+
         if 'created_at' not in result:
             result['created_at'] = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+
+        self.logging.write("info", f"map_to_db result: {result}")
         return result
 
-    # 🔁 Convert DB → JSON for mobile
+    # =====================
+    # DB → JSON
+    # =====================
     def map_to_mobile(self, db_row):
+        self.logging.write("info", f"map_to_mobile called with row: {db_row}")
+
         mapping = self.get_vegetatif_mapping()
         reverse_map = {v: k for k, v in mapping.items()}
-        return {reverse_map[k]: v for k, v in db_row.items() if k in reverse_map}
+
+        result = {reverse_map[k]: v for k, v in db_row.items() if k in reverse_map}
+
+        self.logging.write("info", f"map_to_mobile result: {result}")
+        return result
 
     # =====================
-    # 💾 INSERT DATA
+    # INSERT
     # =====================
     def insert_vegetatif(self, payload):
+        self.logging.write("info", f"insert_vegetatif called with: {payload}")
+
         data = self.map_to_db(payload)
         placeholders = ", ".join(["%s"] * len(data))
         columns = ", ".join(data.keys())
@@ -96,54 +117,84 @@ class serveVegetatif:
 
         query = f"INSERT INTO vegetatif ({columns}) VALUES ({placeholders})"
 
+        self.logging.write("info", f"Executing SQL: {query}")
+        self.logging.write("info", f"Values: {values}")
+
         try:
             conn = pymysql.connect(**self.db_config)
             with conn.cursor() as cursor:
                 cursor.execute(query, values)
                 conn.commit()
             conn.close()
+
+            self.logging.write("info", "Insert vegetatif success")
             return {"status": "success", "message": "Vegetatif data inserted successfully"}
+
         except Exception as e:
+            self.logging.write("error", f"Insert error: {str(e)}")
             return {"status": "error", "message": str(e)}
 
     # =====================
-    # 📥 GET DATA
+    # GET
     # =====================
     def get_vegetatif(self, id=None):
-        conn = pymysql.connect(**self.db_config)
-        cursor = conn.cursor(pymysql.cursors.DictCursor)
+        self.logging.write("info", f"get_vegetatif called, id={id}")
+
         try:
+            conn = pymysql.connect(**self.db_config)
+            cursor = conn.cursor(pymysql.cursors.DictCursor)
+
             if id:
-                cursor.execute("SELECT * FROM vegetatif WHERE id=%s", (id,))
+                query = "SELECT * FROM vegetatif WHERE id=%s"
+                self.logging.write("info", f"Executing SQL: {query} | id={id}")
+                cursor.execute(query, (id,))
             else:
-                cursor.execute("SELECT * FROM vegetatif")
-            
+                query = "SELECT * FROM vegetatif"
+                self.logging.write("info", f"Executing SQL: {query}")
+                cursor.execute(query)
+
             result = cursor.fetchall()
             conn.close()
 
-            return [self.map_to_mobile(row) for row in result]
+            mapped = [self.map_to_mobile(row) for row in result]
+            self.logging.write("info", f"get_vegetatif result count: {len(mapped)}")
+
+            return mapped
+
         except Exception as e:
+            self.logging.write("error", f"Get error: {str(e)}")
             return {"status": "error", "message": str(e)}
 
 
 # ==========================================================
-# 🔹 API ROUTES
+# ROUTES
 # ==========================================================
 
 vegetatif_service = serveVegetatif()
 
-# POST: Insert | GET: Retrieve
 @vegetatif_module.route('/api/insert', methods=['POST', 'GET'])
 def api_insert_vegetatif():
-    if request.method == 'POST':
-        if not request.is_json:
-            return jsonify({"status": "error", "message": "Content-Type must be application/json"}), 415
+    try:
+        vegetatif_service.logging.write("info", "api_insert_vegetatif hit")
 
-        payload = request.get_json()
-        result = vegetatif_service.insert_vegetatif(payload)
-        return jsonify(result)
+        if request.method == 'POST':
+            if not request.is_json:
+                vegetatif_service.logging.write("error", "Invalid Content-Type")
+                return jsonify({"status": "error", "message": "Content-Type must be application/json"}), 415
 
-    elif request.method == 'GET':
-        id = request.args.get('id')
-        data = vegetatif_service.get_vegetatif(id)
-        return jsonify(data)
+            payload = request.get_json()
+            vegetatif_service.logging.write("info", f"POST payload: {payload}")
+
+            result = vegetatif_service.insert_vegetatif(payload)
+            return jsonify(result)
+
+        elif request.method == 'GET':
+            id = request.args.get('id')
+            vegetatif_service.logging.write("info", f"GET id={id}")
+
+            data = vegetatif_service.get_vegetatif(id)
+            return jsonify(data)
+
+    except Exception as e:
+        vegetatif_service.logging.write("error", f"Route error: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)})

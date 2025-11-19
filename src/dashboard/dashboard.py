@@ -6,6 +6,8 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash
 dashboard_module = Blueprint('dashboard', __name__)
 import pandas as pd
 import pymysql
+
+from src.helper.Logfile import LogFile
 import io
 from datetime import datetime
 # Konfigurasi koneksi database
@@ -20,6 +22,7 @@ DB_CONFIG = {
 
 class Dashboard:
     def __init__(self):
+        self.logging = LogFile("daemon")
         self.UPLOAD_FOLDER = 'uploads'
         os.makedirs(self.UPLOAD_FOLDER, exist_ok=True)
         self.independentVars = ['GNDVI', 'band1', 'band2', 'band3', 'NDVI', "SR"]
@@ -259,7 +262,7 @@ class Dashboard:
                     {where_sql}
                     ORDER BY tahun DESC, bulan DESC, id ASC
                     LIMIT %s OFFSET %s
-                """
+                    """
                 cursor.execute(sql, (*params, per_page, offset))
                 data = cursor.fetchall()
 
