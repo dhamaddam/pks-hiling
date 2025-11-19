@@ -4,19 +4,19 @@ from datetime import datetime
 from flask import Blueprint, request, jsonify
 from src.helper.Logfile import LogFile
 
-# 🔹 Blueprint
-sensus_tanaman_module = Blueprint('sensus_tanaman_module', __name__)
+# 🔹 Blueprint and URL prefix
+sexratio_module = Blueprint('sexratio_module', __name__, url_prefix='/sexratio/api')
 
-class serveSensusTanaman:
+class serveSexRatio:
     def __init__(self):
         self.logging = LogFile("daemon")
-        self.logging.write("info", "serveSensusTanaman initialized")
+        self.logging.write("info", "serveSexRatio initialized")
 
         self.UPLOAD_FOLDER = 'uploads'
         os.makedirs(self.UPLOAD_FOLDER, exist_ok=True)
         self.base_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # Database config
+        # Database configuration
         self.db_config = {
             'host': '43.218.37.170',
             'user': 'iopri',
@@ -28,24 +28,24 @@ class serveSensusTanaman:
     # =====================
     # FIELD MAPPING
     # =====================
-    def get_sensus_mapping(self):
-        self.logging.write("info", "get_sensus_mapping called")
+    def get_sexratio_mapping(self):
+        self.logging.write("info", "get_sexratio_mapping called")
         return {
             "id": "id",
-            "tgl_pengamatan": "tgl_pengamatan",
             "tahun": "tahun",
             "bulan": "bulan",
             "expt_num": "expt_num",
             "crossing": "crossing",
             "female": "female",
             "male": "male",
-            "female_gp_f": "female_gp_f",
-            "female_gp_m": "female_gp_m",
-            "male_gp_f": "male_gp_f",
-            "male_gp_m": "male_gp_m",
             "baris": "baris",
             "pohon": "pohon",
-            "sensus_tanaman": "sensus_tanaman",
+            "jantan": "jantan",
+            "betina": "betina",
+            "banci": "banci",
+            "dompet": "dompet",
+            "pelepah": "pelepah",
+            "sex_ratio": "sex_ratio",
             "palm_id": "palm_id",
             "created_at": "created_at"
         }
@@ -56,7 +56,7 @@ class serveSensusTanaman:
     def map_to_db(self, payload):
         self.logging.write("info", f"map_to_db called with payload: {payload}")
 
-        mapping = self.get_sensus_mapping()
+        mapping = self.get_sexratio_mapping()
         result = {}
 
         for key, val in payload.items():
@@ -75,7 +75,7 @@ class serveSensusTanaman:
     def map_to_mobile(self, db_row):
         self.logging.write("info", f"map_to_mobile called with row: {db_row}")
 
-        mapping = self.get_sensus_mapping()
+        mapping = self.get_sexratio_mapping()
         reverse_map = {v: k for k, v in mapping.items()}
         result = {reverse_map[k]: v for k, v in db_row.items() if k in reverse_map}
 
@@ -85,14 +85,15 @@ class serveSensusTanaman:
     # =====================
     # INSERT
     # =====================
-    def insert_sensus(self, payload):
-        self.logging.write("info", f"insert_sensus called with: {payload}")
+    def insert_sexratio(self, payload):
+        self.logging.write("info", f"insert_sexratio called with: {payload}")
 
         data = self.map_to_db(payload)
         placeholders = ", ".join(["%s"] * len(data))
         columns = ", ".join(data.keys())
         values = tuple(data.values())
-        query = f"INSERT INTO sensus_tanaman ({columns}) VALUES ({placeholders})"
+
+        query = f"INSERT INTO sex_ratio ({columns}) VALUES ({placeholders})"
 
         self.logging.write("info", f"Executing SQL: {query}")
         self.logging.write("info", f"Values: {values}")
@@ -102,10 +103,11 @@ class serveSensusTanaman:
             with conn.cursor() as cursor:
                 cursor.execute(query, values)
                 conn.commit()
-            conn.close()
 
-            self.logging.write("info", "Insert sensus_tanaman success")
-            return {"status": "success", "message": "Sensus Tanaman data inserted successfully"}
+            conn.close()
+            self.logging.write("info", "Insert sex_ratio success")
+
+            return {"status": "success", "message": "Sex Ratio data inserted successfully"}
 
         except Exception as e:
             self.logging.write("error", f"Insert error: {str(e)}")
@@ -114,19 +116,19 @@ class serveSensusTanaman:
     # =====================
     # GET
     # =====================
-    def get_sensus(self, id=None):
-        self.logging.write("info", f"get_sensus called, id={id}")
+    def get_sexratio(self, id=None):
+        self.logging.write("info", f"get_sexratio called, id={id}")
 
         try:
             conn = pymysql.connect(**self.db_config)
             cursor = conn.cursor(pymysql.cursors.DictCursor)
 
             if id:
-                query = "SELECT * FROM sensus_tanaman WHERE id=%s"
+                query = "SELECT * FROM sex_ratio WHERE id=%s"
                 self.logging.write("info", f"Executing SQL: {query} | id={id}")
                 cursor.execute(query, (id,))
             else:
-                query = "SELECT * FROM sensus_tanaman ORDER BY created_at DESC"
+                query = "SELECT * FROM sex_ratio ORDER BY created_at DESC"
                 self.logging.write("info", f"Executing SQL: {query}")
                 cursor.execute(query)
 
@@ -134,7 +136,7 @@ class serveSensusTanaman:
             conn.close()
 
             mapped = [self.map_to_mobile(row) for row in result]
-            self.logging.write("info", f"get_sensus result count: {len(mapped)}")
+            self.logging.write("info", f"get_sexratio result count: {len(mapped)}")
 
             return mapped
 
@@ -147,34 +149,31 @@ class serveSensusTanaman:
 # ROUTES
 # ==========================================================
 
-sensus_service = serveSensusTanaman()
+sexratio_service = serveSexRatio()
 
-@sensus_tanaman_module.route('/api/insert', methods=['POST', 'GET'])
-def api_insert_sensus_tanaman():
+@sexratio_module.route('/insert', methods=['POST', 'GET'])
+def api_insert_sexratio():
     try:
-        sensus_service.logging.write("info", "api_insert_sensus_tanaman hit")
+        sexratio_service.logging.write("info", "api_insert_sexratio hit")
 
         if request.method == 'POST':
             if not request.is_json:
-                sensus_service.logging.write("error", "Invalid Content-Type")
-                return jsonify({
-                    "status": "error",
-                    "message": "Content-Type must be application/json"
-                }), 415
+                sexratio_service.logging.write("error", "Invalid Content-Type")
+                return jsonify({"status": "error", "message": "Content-Type must be application/json"}), 415
 
             payload = request.get_json()
-            sensus_service.logging.write("info", f"POST payload: {payload}")
+            sexratio_service.logging.write("info", f"POST payload: {payload}")
 
-            result = sensus_service.insert_sensus(payload)
+            result = sexratio_service.insert_sexratio(payload)
             return jsonify(result)
 
         elif request.method == 'GET':
             id = request.args.get('id')
-            sensus_service.logging.write("info", f"GET id={id}")
+            sexratio_service.logging.write("info", f"GET id={id}")
 
-            data = sensus_service.get_sensus(id)
+            data = sexratio_service.get_sexratio(id)
             return jsonify(data)
 
     except Exception as e:
-        sensus_service.logging.write("error", f"Route error: {str(e)}")
+        sexratio_service.logging.write("error", f"Route error: {str(e)}")
         return jsonify({"status": "error", "message": str(e)})
