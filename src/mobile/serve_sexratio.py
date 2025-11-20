@@ -5,7 +5,7 @@ from flask import Blueprint, request, jsonify
 from src.helper.Logfile import LogFile
 
 # 🔹 Blueprint and URL prefix
-sexratio_module = Blueprint('sexratio_module', __name__, url_prefix='/sexratio/api')
+sexratio_module = Blueprint('sexratio_module', __name__)
 
 class serveSexRatio:
     def __init__(self):
@@ -151,7 +151,7 @@ class serveSexRatio:
 
 sexratio_service = serveSexRatio()
 
-@sexratio_module.route('/insert', methods=['POST', 'GET'])
+@sexratio_module.route('/api/insert', methods=['POST', 'GET'])
 def api_insert_sexratio():
     try:
         sexratio_service.logging.write("info", "api_insert_sexratio hit")
