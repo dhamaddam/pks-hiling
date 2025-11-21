@@ -67,7 +67,9 @@ class serveVegetatif:
             "palm_id": "palm_id",
             "tahun": "tahun",
             "bulan": "bulan",
+            "pelaksana_pengamatan" : "pelaksana_pengamatan",
             "usia_tanam": "usia_tanam",
+            "tanggal_pengamatan" : "tanggal_pengamatan",
             "created_at": "created_at"
         }
 
