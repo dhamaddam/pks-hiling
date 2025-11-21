@@ -42,6 +42,8 @@ class serveProduksi:
             "ffb1": "ffb1",
             "bn2": "bn2",
             "ffb2": "ffb2",
+            "bn3": "bn3",
+            "ffb3": "ffb3",
             "bn4": "bn4",
             "ffb4": "ffb4",
             "bn5": "bn5",
